@@ -13,7 +13,9 @@ const getMerkleRootHash = (leaves: Transaction[]): Sha256Hash => {
 const getMerkleRootHashHelper = (leaves: string[]): Sha256Hash => {
     if (leaves.length < 1) return ''
     if (leaves.length === 1) return leaves[0]
-    if (leaves.length % 2 !== 0) return getMerkleRootHashHelper([...leaves, leaves[leaves.length - 1]])
+    if (leaves.length % 2 !== 0) {
+        return getMerkleRootHashHelper([...leaves, leaves[leaves.length - 1]])
+    }
     if (leaves.length % 2 === 0) {
         return fp.pipe(
             fp.chunk(2),
@@ -27,23 +29,27 @@ const getMerkleRootHashHelper = (leaves: string[]): Sha256Hash => {
 }
 
 interface BlockChain {
-    blocks: Block[];
+    prevBlock: BlockChain;
+    block: Block;
     currIndex: number;
 }
 
 interface Block {
-    index: number;
-    timestamp: string;
+    header: {
+        prevHash: Sha256Hash;
+        timestamp: string;
+        nonce: number;
+        merkleRootHash: Sha256Hash;
+    };
+    headerHash: Sha256Hash;
     data: Transaction[];
-    precedingHash: string;
-    nonce: number;
 }
 
 interface Transaction {
     from: string;
     to: string;
     amount: string;
-    signature: string;
+    signature: Sha256Hash;
 }
 
 const getBlockHash = (target: Block): Sha256Hash => {
